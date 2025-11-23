@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://learncheck-be-production.up.railway.app/",
+        target: "https://learncheck-be-production.up.railway.app",
         changeOrigin: true,
       },
     },
