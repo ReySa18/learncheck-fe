@@ -1,5 +1,5 @@
 export async function fetchGeneratedQuestions({ tutorialId, userId }) {
-  const baseUrl = import.meta.env.BE_BASE_URL;
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   const res = await fetch(
     `${baseUrl}/api/generate?tutorial_id=${tutorialId}&user_id=${userId}`

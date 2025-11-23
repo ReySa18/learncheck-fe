@@ -1,5 +1,3 @@
-// src/components/question/MultipleChoiceField/MultipleChoiceField.jsx
-
 import OptionItem from "./OptionItem";
 import ClearButton from "./ClearButton";
 

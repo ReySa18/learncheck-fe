@@ -1,5 +1,3 @@
-// src/components/common/ProgressIndicator.jsx
-
 export default function ProgressIndicator({ current, total }) {
   const progress = ((current + 1) / total) * 100;
 
