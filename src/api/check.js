@@ -1,5 +1,5 @@
 export async function submitUserAnswers({ tutorialId, userId, answers }) {
-  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const baseUrl = import.meta.env.BE_BASE_URL;
 
   const res = await fetch(`${baseUrl}/api/check`, {
     method: "POST",
