@@ -23,4 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment variables (JANGAN UPLOAD KE GIT)
 .env
+.env.local
+.env.production
+.env.development
+.env.*
