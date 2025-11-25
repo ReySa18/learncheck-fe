@@ -1,6 +1,7 @@
 export default function NavigationButtons({
   currentIndex,
   isLast,
+  total,
   prevQuestion,
   nextQuestion,
   submitAnswers,
@@ -12,8 +13,12 @@ export default function NavigationButtons({
   const canProceed =
     userAnswers?.[question.id] || flaggedQuestions?.[question.id];
 
+  const answeredCount = Object.keys(userAnswers).length;
+  const allAnswered = answeredCount === total;
+
   return (
     <div className="flex items-center justify-between mt-6">
+
       {/* Tombol Sebelumnya */}
       {currentIndex > 0 ? (
         <button
@@ -58,9 +63,9 @@ export default function NavigationButtons({
         ) : (
           <button
             onClick={submitAnswers}
-            disabled={Object.keys(userAnswers).length !== Object.keys(flaggedQuestions).length}
+            disabled={!allAnswered}
             className={`px-4 py-2 rounded-lg text-white transition ${
-              Object.keys(userAnswers).length === Object.keys(flaggedQuestions).length
+              allAnswered
                 ? "bg-green-600 hover:bg-green-700"
                 : "bg-gray-400 cursor-not-allowed"
             }`}

@@ -7,6 +7,9 @@ import QuestionCard from "../components/question/QuestionCard";
 import FeedbackCard from "../components/feedback/FeedbackCard";
 import useQuestions from "../hooks/useQuestions";
 import NavigationButtons from "../components/navigation/NavigationButtons";
+//import FeedbackReview from "../components/feedback/FeedbackReview";
+import QuestionReviewCard from "../components/feedback/QuestionReviewCard";
+import ReviewNavigationButtons from "../components/feedback/ReviewNavigationButtons";
 
 export default function LearncheckPage({ tutorialId, userId }) {
   const {
@@ -20,13 +23,15 @@ export default function LearncheckPage({ tutorialId, userId }) {
     nextQuestion,
     prevQuestion,
     submitAnswers,
+    clearAnswer,
     error,
   } = useQuestions({ tutorialId, userId });
 
   const [showHint, setShowHint] = useState(false);
 
-  // 🔥 Tambahan: state untuk menandai soal
   const [flaggedQuestions, setFlaggedQuestions] = useState({});
+
+  const [reviewIndex, setReviewIndex] = useState(0);
 
   const markQuestion = (id) => {
     setFlaggedQuestions((prev) => ({
@@ -61,11 +66,28 @@ export default function LearncheckPage({ tutorialId, userId }) {
     );
   }
 
+  
   if (feedback) {
+    const item = feedback.details[reviewIndex]; // ambil soal yg sedang direview
+
     return (
-      <div className="max-w-[var(--app-layout-width)] mx-auto px-4 py-6">
-        <FeedbackCard result={feedback} />
-      </div>
+      <MainCardContainer preferences={preferences}>
+        <Header />
+
+        <QuestionReviewCard
+          item={item}
+          index={reviewIndex}
+          total={feedback.total}
+        />
+
+        <ReviewNavigationButtons
+          index={reviewIndex}
+          total={feedback.total}
+          onPrev={() => setReviewIndex(i => Math.max(0, i - 1))}
+          onNext={() => setReviewIndex(i => Math.min(feedback.total - 1, i + 1))}
+          onRestart={() => window.location.reload()}
+        />
+      </MainCardContainer>
     );
   }
 
@@ -85,6 +107,7 @@ export default function LearncheckPage({ tutorialId, userId }) {
         total={total}
         answer={userAnswers[question.id] || ""}
         onAnswerChange={(val) => setAnswer(question.id, val)}
+        onClearAnswer={() => clearAnswer(question.id)}   // ✅ Tambahkan ini!
         showHint={showHint}
         onToggleHint={() => setShowHint((prev) => !prev)}
       />
@@ -93,6 +116,7 @@ export default function LearncheckPage({ tutorialId, userId }) {
       <NavigationButtons
         currentIndex={currentIndex}
         isLast={isLast}
+        total={total}     
         prevQuestion={prevQuestion}
         nextQuestion={nextQuestion}
         submitAnswers={submitAnswers}
@@ -101,7 +125,6 @@ export default function LearncheckPage({ tutorialId, userId }) {
         flaggedQuestions={flaggedQuestions}
         markQuestion={markQuestion}
       />
-
     </MainCardContainer>
   );
 }

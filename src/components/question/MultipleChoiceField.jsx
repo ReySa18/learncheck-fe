@@ -1,11 +1,10 @@
 import OptionItem from "./OptionItem";
 import ClearButton from "./ClearButton";
 
-export default function MultipleChoiceField({ options = [], value, onChange }) {
+export default function MultipleChoiceField({ options = [], value, onChange, onClear }) {
   return (
     <div className="space-y-3 mt-3">
 
-      {/* OPTIONS */}
       {options.map((opt, idx) => (
         <OptionItem
           key={idx}
@@ -15,8 +14,9 @@ export default function MultipleChoiceField({ options = [], value, onChange }) {
         />
       ))}
 
-      {/* CLEAR BUTTON (only if selected) */}
-      {value && <ClearButton onClear={() => onChange(null)} />}
+      {value && (
+        <ClearButton onClear={onClear} />
+      )}
     </div>
   );
 }

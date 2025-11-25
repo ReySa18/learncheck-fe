@@ -2,14 +2,6 @@
 import { useEffect, useState } from "react";
 import { fetchGeneratedQuestions } from "../api/generate";
 
-/**
- * Hook useQuestions (final)
- * - Mengambil data dari backend via fetchGeneratedQuestions
- * - Menormalisasi struktur soal supaya komponen UI konsisten:
- *     { id, text, options, hint, correct_index }
- * - Menyimpan userAnswers (bisa berupa index number atau option string)
- * - Menyediakan navigasi dan submit lokal (submitAnswers -> menghasilkan feedback)
- */
 export default function useQuestions({ tutorialId, userId }) {
   const [questions, setQuestions] = useState([]);
   const [preferences, setPreferences] = useState(null);
@@ -17,16 +9,13 @@ export default function useQuestions({ tutorialId, userId }) {
   const [error, setError] = useState(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState({}); // { [questionId]: selectedIndexOrValue }
+  const [userAnswers, setUserAnswers] = useState({});
   const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
     load();
-    // reset when tutorialId/userId changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tutorialId, userId]);
 
-  // Normalize backend question shape -> { id, text, options, hint, correct_index }
   function normalizeQuestion(q) {
     return {
       id: q.id,
@@ -36,11 +25,10 @@ export default function useQuestions({ tutorialId, userId }) {
       correct_index:
         typeof q.correct_index === "number"
           ? q.correct_index
-          : // try to resolve if backend provided correct_answer as value
-            typeof q.correct_answer !== "undefined"
+          : typeof q.correct_answer !== "undefined"
           ? (q.choices || q.options || []).indexOf(q.correct_answer)
           : null,
-      raw: q, // keep original in case needed
+      raw: q,
     };
   }
 
@@ -75,6 +63,14 @@ export default function useQuestions({ tutorialId, userId }) {
       ...prev,
       [questionId]: valueOrIndex,
     }));
+  }
+
+  function clearAnswer(questionId) {
+    setUserAnswers((prev) => {
+      const updated = { ...prev };
+      delete updated[questionId];
+      return updated;
+    });
   }
 
   function nextQuestion() {
@@ -125,6 +121,7 @@ export default function useQuestions({ tutorialId, userId }) {
       correct: correctCount,
       details,
     });
+
     return { total, correct: correctCount, details };
   }
 
@@ -136,6 +133,7 @@ export default function useQuestions({ tutorialId, userId }) {
     loading,
     feedback,
     setAnswer,
+    clearAnswer,  
     nextQuestion,
     prevQuestion,
     submitAnswers,

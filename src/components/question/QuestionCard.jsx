@@ -1,6 +1,7 @@
 import HintButton from "./HintButton";
 import HintContent from "./HintContent";
 import MultipleChoiceField from "./MultipleChoiceField";
+import ClearButton from "./ClearButton"; // boleh hapus ini jika tidak dipakai
 
 export default function QuestionCard({
   question,
@@ -8,6 +9,7 @@ export default function QuestionCard({
   total,
   answer,
   onAnswerChange,
+  onClearAnswer,
   showHint,
   onToggleHint,
 }) {
@@ -20,7 +22,6 @@ export default function QuestionCard({
         shadow p-5 rounded-2xl mb-6
       "
     >
-
       <div className="text-gray-500 dark:text-gray-400 text-sm mb-2">
         Soal {index + 1} dari {total}
       </div>
@@ -40,7 +41,9 @@ export default function QuestionCard({
         options={question.options}
         value={answer}
         onChange={onAnswerChange}
+        onClear={onClearAnswer}   
       />
+
     </div>
   );
 }
