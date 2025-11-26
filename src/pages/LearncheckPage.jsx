@@ -9,6 +9,7 @@ import NavigationButtons from "../components/navigation/NavigationButtons";
 import QuestionReviewCard from "../components/feedback/QuestionReviewCard";
 import ReviewNavigationButtons from "../components/feedback/ReviewNavigationButtons";
 import FeedbackLoading from "../components/common/FeedbackLoading";
+import AppAlert from "../components/common/AppAlert";
 
 export default function LearncheckPage({ tutorialId, userId }) {
   const {
@@ -47,8 +48,19 @@ export default function LearncheckPage({ tutorialId, userId }) {
   }, [currentIndex]);
 
   if (error) {
-    return <div className="p-6 text-red-600">Gagal memuat data: {error}</div>;
+    return (
+      <MainCardContainer preferences={preferences}>
+        <Header />
+        <div className="mt-4">
+          <AppAlert
+            type="error"
+            message={`Gagal memuat data`}
+          />
+        </div>
+      </MainCardContainer>
+    );
   }
+
 
   if (isGenerating) {
     return (
@@ -60,9 +72,14 @@ export default function LearncheckPage({ tutorialId, userId }) {
 
   if (questions.length === 0) {
     return (
-      <div className="p-6 text-center text-gray-600">
-        Tidak ada pertanyaan tersedia.
-      </div>
+      <MainCardContainer preferences={preferences}>
+        <Header />
+        <AppAlert
+          type="info"
+          message="Tidak ada pertanyaan tersedia untuk materi ini."
+          className="mt-6"
+        />
+      </MainCardContainer>
     );
   }
 
@@ -76,7 +93,7 @@ export default function LearncheckPage({ tutorialId, userId }) {
     return (
       <MainCardContainer preferences={preferences}>
         <Header />
-
+        
         <QuestionReviewCard
           item={item}
           index={reviewIndex}
