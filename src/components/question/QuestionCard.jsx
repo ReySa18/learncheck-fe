@@ -1,7 +1,7 @@
 import HintButton from "./HintButton";
 import HintContent from "./HintContent";
 import MultipleChoiceField from "./MultipleChoiceField";
-import ClearButton from "./ClearButton"; // boleh hapus ini jika tidak dipakai
+import ClearButton from "./ClearButton"; 
 
 export default function QuestionCard({
   question,
@@ -13,6 +13,9 @@ export default function QuestionCard({
   showHint,
   onToggleHint,
 }) {
+
+  const isMultiple = question.correct_index.length > 1;
+
   return (
     <div
       className="
@@ -24,6 +27,11 @@ export default function QuestionCard({
     >
       <div className="text-gray-500 dark:text-gray-400 text-sm mb-2">
         Soal {index + 1} dari {total}
+        {isMultiple && (
+          <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-1 rounded">
+            Multiple Answer
+          </span>
+        )}
       </div>
 
       <div className="font-semibold mb-3 text-gray-900 dark:text-gray-100">
@@ -40,10 +48,10 @@ export default function QuestionCard({
       <MultipleChoiceField
         options={question.options}
         value={answer}
-        onChange={onAnswerChange}
-        onClear={onClearAnswer}   
+        multiple={isMultiple}
+        onChange={(idx) => onAnswerChange(question.id, idx)}
+        onClear={() => onClearAnswer(question.id)}
       />
-
     </div>
   );
 }

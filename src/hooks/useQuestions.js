@@ -1,7 +1,7 @@
 // src/hooks/useQuestions.js
 import { useEffect, useState } from "react";
 import { fetchGeneratedQuestions } from "../api/generate";
-import { submitUserAnswers } from "../api/submit"; // pastikan ini menunjuk ke submit API baru
+import { submitUserAnswers } from "../api/submit";
 
 export default function useQuestions({ tutorialId, userId }) {
   const [questions, setQuestions] = useState([]);
@@ -19,22 +19,27 @@ export default function useQuestions({ tutorialId, userId }) {
     load();
   }, [tutorialId, userId]);
 
+  /** ------------------------------
+   * NORMALIZER — selalu hasilkan correct_index berupa array
+   --------------------------------*/
   function normalizeQuestion(q) {
     return {
       id: q.id,
       text: q.question ?? q.text ?? "",
       options: q.choices ?? q.options ?? [],
       hint: q.hint ?? "",
-      correct_index:
-        typeof q.correct_index === "number"
-          ? q.correct_index
-          : typeof q.correct_answer !== "undefined"
-          ? (q.choices || q.options || []).indexOf(q.correct_answer)
-          : null,
+      correct_index: Array.isArray(q.correct_index)
+        ? q.correct_index
+        : typeof q.correct_index === "number"
+        ? [q.correct_index]
+        : [],
       raw: q,
     };
   }
 
+  /** ------------------------------
+   * LOAD QUESTIONS
+   --------------------------------*/
   async function load() {
     setError(null);
     setFeedback(null);
@@ -61,13 +66,34 @@ export default function useQuestions({ tutorialId, userId }) {
     }
   }
 
-  function setAnswer(questionId, valueOrIndex) {
-    setUserAnswers((prev) => ({
-      ...prev,
-      [questionId]: valueOrIndex,
-    }));
+  /** ------------------------------
+   * SET ANSWER (radio atau checkbox)
+   --------------------------------*/
+  function setAnswer(questionId, value) {
+    setUserAnswers((prev) => {
+      const q = questions.find((x) => x.id === questionId);
+      const isMulti = q && Array.isArray(q.correct_index) && q.correct_index.length > 1;
+
+      if (!isMulti) {
+        // single answer (radio)
+        return { ...prev, [questionId]: value };
+      }
+
+      // multiple answer (checkbox)
+      const prevArr = Array.isArray(prev[questionId]) ? prev[questionId] : [];
+      let nextArr;
+
+      if (prevArr.includes(value)) {
+        nextArr = prevArr.filter((v) => v !== value); // uncheck
+      } else {
+        nextArr = [...prevArr, value]; // check
+      }
+
+      return { ...prev, [questionId]: nextArr };
+    });
   }
 
+  /** ------------------------------ */
   function clearAnswer(questionId) {
     setUserAnswers((prev) => {
       const updated = { ...prev };
@@ -84,37 +110,59 @@ export default function useQuestions({ tutorialId, userId }) {
     setCurrentIndex((i) => Math.max(i - 1, 0));
   }
 
+  /** ------------------------------
+   * Convert userAnswers to array of index
+   --------------------------------*/
   function resolveSelectedIndex(q, stored) {
-    if (stored == null) return null;
-    if (typeof stored === "number") return stored;
-    const idx = (q.options || []).indexOf(stored);
-    return idx >= 0 ? idx : null;
+    if (stored == null) return [];
+    if (typeof stored === "number") return [stored];
+    if (Array.isArray(stored)) return stored;
+    return [];
   }
 
+  /** ------------------------------
+   * Helper untuk tombol submit
+   --------------------------------*/
+  function isAnswered(value) {
+    if (value == null) return false;
+    if (Array.isArray(value)) return value.length > 0;
+    return true;
+  }
+
+  const answeredCount = questions.filter((q) =>
+    isAnswered(userAnswers[q.id])
+  ).length;
+
+  const allAnswered = answeredCount === questions.length;
+
+  /** ------------------------------
+   * SUBMIT ANSWERS (payload multiple answer)
+   --------------------------------*/
   async function submitAnswers() {
     setIsSubmitting(true);
 
     try {
-      // bentuk payload untuk backend
       const payload = questions.map((q) => ({
         id: q.id,
         question_text: q.text,
         options: q.options,
-        correct_answer: q.options[q.correct_index],
-        user_answer:
-          resolveSelectedIndex(q, userAnswers[q.id]) != null
-            ? q.options[resolveSelectedIndex(q, userAnswers[q.id])]
-            : null
+
+        // correct_answer wajib array
+        correct_answer: q.correct_index.map((idx) => q.options[idx]),
+
+        // user_answer selalu array juga
+        user_answer: resolveSelectedIndex(q, userAnswers[q.id]).map(
+          (idx) => q.options[idx]
+        ),
       }));
 
-      // panggil backend
       const res = await submitUserAnswers({
         tutorialId,
         userId,
-        questions: payload
+        questions: payload,
       });
 
-      // merge data backend + FE untuk membuat bentuk final
+      // merge backend + FE
       const merged = res.data.details.map((fb) => {
         const q = questions.find((x) => x.id === fb.id);
         const userIdx = resolveSelectedIndex(q, userAnswers[fb.id]);
@@ -124,7 +172,7 @@ export default function useQuestions({ tutorialId, userId }) {
           question: q.text,
           options: q.options,
           userSelectedIndex: userIdx,
-          correctIndex: q.correct_index,   // ← konsisten!
+          correctIndex: q.correct_index,
           isCorrect: fb.is_correct,
           explanation: fb.explanation,
         };
@@ -138,10 +186,11 @@ export default function useQuestions({ tutorialId, userId }) {
 
       return merged;
     } finally {
-    setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 
+  /** ------------------------------ */
   return {
     questions,
     preferences,
@@ -155,6 +204,7 @@ export default function useQuestions({ tutorialId, userId }) {
     nextQuestion,
     prevQuestion,
     submitAnswers,
+    allAnswered,
     error,
   };
 }

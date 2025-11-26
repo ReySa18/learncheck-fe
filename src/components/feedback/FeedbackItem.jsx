@@ -17,7 +17,9 @@ export default function FeedbackItem({ label, value }) {
           text-gray-800 dark:text-gray-200
         "
       >
-        {value}
+        <div
+          dangerouslySetInnerHTML={{ __html: value }}
+        ></div>
       </div>
     </div>
   );

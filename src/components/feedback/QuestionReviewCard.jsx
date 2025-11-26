@@ -37,8 +37,13 @@ export default function QuestionReviewCard({ item, index, total }) {
 
       <div className="space-y-2">
         {item.options.map((opt, i) => {
-          const isUser = i === item.userSelectedIndex;
-          const isCorrectOpt = i === item.correctIndex;
+          const isUser = Array.isArray(item.userSelectedIndex)
+            ? item.userSelectedIndex.includes(i)
+            : i === item.userSelectedIndex;
+
+          const isCorrectOpt = Array.isArray(item.correctIndex)
+            ? item.correctIndex.includes(i)
+            : i === item.correctIndex;
 
           let style = `
             p-3 rounded-lg border text-sm transition 
@@ -51,7 +56,7 @@ export default function QuestionReviewCard({ item, index, total }) {
               " bg-green-200 border-green-600 text-green-900 dark:bg-green-700 dark:text-white";
           }
 
-          if (isUser && !isCorrect) {
+          if (isUser && !isCorrectOpt) {
             style +=
               " bg-red-200 border-red-600 text-red-900 dark:bg-red-700 dark:text-white";
           }
@@ -72,11 +77,13 @@ export default function QuestionReviewCard({ item, index, total }) {
         border border-gray-300 dark:border-gray-700 
         rounded-lg text-sm text-gray-700 dark:text-gray-200
       ">
-        <div className="font-semibold mb-1 text-gray-800 dark:text-gray-300">
+        <div className="font-bold mb-1 text-gray-800 dark:text-gray-300">
           Penjelasan:
         </div>
-
-        {item.explanation || "Tidak ada penjelasan."}
+        
+        <div
+          dangerouslySetInnerHTML={{ __html: item.explanation }}
+        />
       </div>
     </div>
   );

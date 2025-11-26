@@ -1,2 +1,2 @@
 export * from "./generate";
-export * from "./check";
+export * from "./submit";

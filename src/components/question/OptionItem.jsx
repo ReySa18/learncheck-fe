@@ -1,4 +1,4 @@
-export default function OptionItem({ label, isSelected, onSelect }) {
+export default function OptionItem({ label, isSelected, multiple, onSelect }) {
   return (
     <div
       onClick={onSelect}

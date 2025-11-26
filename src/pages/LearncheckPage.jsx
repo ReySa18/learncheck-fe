@@ -117,9 +117,9 @@ export default function LearncheckPage({ tutorialId, userId }) {
         question={question}
         index={currentIndex}
         total={total}
-        answer={userAnswers[question.id] || ""}
-        onAnswerChange={(val) => setAnswer(question.id, val)}
-        onClearAnswer={() => clearAnswer(question.id)}   // ✅ Tambahkan ini!
+        answer={userAnswers[question.id]}
+        onAnswerChange={setAnswer}
+        onClearAnswer={clearAnswer}
         showHint={showHint}
         onToggleHint={() => setShowHint((prev) => !prev)}
       />

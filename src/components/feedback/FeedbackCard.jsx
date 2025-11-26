@@ -3,15 +3,17 @@ import FeedbackItem from "./FeedbackItem";
 export default function FeedbackCard({ result }) {
   if (!result) return null;
 
-  const userAnswer =
-    result.userSelectedIndex != null
-      ? result.options[result.userSelectedIndex]
-      : "Tidak dijawab";
+  const userAnswer = Array.isArray(result.userSelectedIndex)
+    ? result.userSelectedIndex.map(i => result.options[i]).join(", ")
+    : result.userSelectedIndex != null
+    ? result.options[result.userSelectedIndex]
+    : "Tidak dijawab";
 
-  const correctAnswer =
-    result.correctIndex != null
-      ? result.options[result.correctIndex]
-      : "-";
+  const correctAnswer = Array.isArray(result.correctIndex)
+    ? result.correctIndex.map(i => result.options[i]).join(", ")
+    : result.correctIndex != null
+    ? result.options[result.correctIndex]
+    : "-";
 
   const isCorrect = result.isCorrect ?? false;
 
