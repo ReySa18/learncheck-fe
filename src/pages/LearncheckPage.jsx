@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react"; 
 import MainCardContainer from "../components/layout/MainCardContainer";
-import LoadingSkeleton from "../components/common/LoadingSkeleton";
+import CenteredGeneratingCard from "../components/common/CenteredGeneratingCard";
 import Header from "../components/layout/Header";
 import ProgressIndicator from "../components/common/ProgressIndicator";
 import QuestionCard from "../components/question/QuestionCard";
-import FeedbackCard from "../components/feedback/FeedbackCard";
 import useQuestions from "../hooks/useQuestions";
 import NavigationButtons from "../components/navigation/NavigationButtons";
-//import FeedbackReview from "../components/feedback/FeedbackReview";
 import QuestionReviewCard from "../components/feedback/QuestionReviewCard";
 import ReviewNavigationButtons from "../components/feedback/ReviewNavigationButtons";
+import FeedbackLoading from "../components/common/FeedbackLoading";
 
 export default function LearncheckPage({ tutorialId, userId }) {
   const {
@@ -17,7 +16,8 @@ export default function LearncheckPage({ tutorialId, userId }) {
     preferences,
     userAnswers,
     currentIndex,
-    loading,
+    isGenerating,
+    isSubmitting,
     feedback,
     setAnswer,
     nextQuestion,
@@ -50,11 +50,11 @@ export default function LearncheckPage({ tutorialId, userId }) {
     return <div className="p-6 text-red-600">Gagal memuat data: {error}</div>;
   }
 
-  if (loading || !questions) {
+  if (isGenerating) {
     return (
-      <div className="p-6 max-w-xl mx-auto">
-        <LoadingSkeleton lines={6} />
-      </div>
+      <MainCardContainer preferences={preferences}>
+        <CenteredGeneratingCard message="LearnCheck sedang membuat soal..." />
+      </MainCardContainer>
     );
   }
 
@@ -66,7 +66,10 @@ export default function LearncheckPage({ tutorialId, userId }) {
     );
   }
 
-  
+  if (isSubmitting) {
+    return <FeedbackLoading message="LearnCheck sedang memeriksa jawaban..." />;
+  }
+
   if (feedback) {
     const item = feedback.details[reviewIndex]; // ambil soal yg sedang direview
 

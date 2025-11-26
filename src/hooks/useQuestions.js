@@ -6,12 +6,14 @@ import { submitUserAnswers } from "../api/submit"; // pastikan ini menunjuk ke s
 export default function useQuestions({ tutorialId, userId }) {
   const [questions, setQuestions] = useState([]);
   const [preferences, setPreferences] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
   const [feedback, setFeedback] = useState(null);
+
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     load();
@@ -34,11 +36,11 @@ export default function useQuestions({ tutorialId, userId }) {
   }
 
   async function load() {
-    setLoading(true);
     setError(null);
     setFeedback(null);
     setCurrentIndex(0);
     setUserAnswers({});
+    setIsGenerating(true);
 
     try {
       const response = await fetchGeneratedQuestions({ tutorialId, userId });
@@ -55,7 +57,7 @@ export default function useQuestions({ tutorialId, userId }) {
       setQuestions([]);
       setPreferences(null);
     } finally {
-      setLoading(false);
+      setIsGenerating(false);
     }
   }
 
@@ -90,48 +92,54 @@ export default function useQuestions({ tutorialId, userId }) {
   }
 
   async function submitAnswers() {
-    // bentuk payload untuk backend
-    const payload = questions.map((q) => ({
-      id: q.id,
-      question_text: q.text,
-      options: q.options,
-      correct_answer: q.options[q.correct_index],
-      user_answer:
-        resolveSelectedIndex(q, userAnswers[q.id]) != null
-          ? q.options[resolveSelectedIndex(q, userAnswers[q.id])]
-          : null
-    }));
+    setIsSubmitting(true);
 
-    // panggil backend
-    const res = await submitUserAnswers({
-      tutorialId,
-      userId,
-      questions: payload
-    });
-
-    // merge data backend + FE untuk membuat bentuk final
-    const merged = res.data.details.map((fb) => {
-      const q = questions.find((x) => x.id === fb.id);
-      const userIdx = resolveSelectedIndex(q, userAnswers[fb.id]);
-
-      return {
-        id: fb.id,
-        question: q.text,
+    try {
+      // bentuk payload untuk backend
+      const payload = questions.map((q) => ({
+        id: q.id,
+        question_text: q.text,
         options: q.options,
-        userSelectedIndex: userIdx,
-        correctIndex: q.correct_index,   // ← konsisten!
-        isCorrect: fb.is_correct,
-        explanation: fb.explanation,
-      };
-    });
+        correct_answer: q.options[q.correct_index],
+        user_answer:
+          resolveSelectedIndex(q, userAnswers[q.id]) != null
+            ? q.options[resolveSelectedIndex(q, userAnswers[q.id])]
+            : null
+      }));
 
-    setFeedback({
-      total: res.data.total,
-      correct: res.data.correct,
-      details: merged,
-    });
+      // panggil backend
+      const res = await submitUserAnswers({
+        tutorialId,
+        userId,
+        questions: payload
+      });
 
-    return merged;
+      // merge data backend + FE untuk membuat bentuk final
+      const merged = res.data.details.map((fb) => {
+        const q = questions.find((x) => x.id === fb.id);
+        const userIdx = resolveSelectedIndex(q, userAnswers[fb.id]);
+
+        return {
+          id: fb.id,
+          question: q.text,
+          options: q.options,
+          userSelectedIndex: userIdx,
+          correctIndex: q.correct_index,   // ← konsisten!
+          isCorrect: fb.is_correct,
+          explanation: fb.explanation,
+        };
+      });
+
+      setFeedback({
+        total: res.data.total,
+        correct: res.data.correct,
+        details: merged,
+      });
+
+      return merged;
+    } finally {
+    setIsSubmitting(false);
+    }
   }
 
   return {
@@ -139,7 +147,8 @@ export default function useQuestions({ tutorialId, userId }) {
     preferences,
     userAnswers,
     currentIndex,
-    loading,
+    isGenerating,
+    isSubmitting,
     feedback,
     setAnswer,
     clearAnswer,
