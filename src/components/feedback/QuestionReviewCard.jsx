@@ -4,23 +4,23 @@ export default function QuestionReviewCard({ item, index, total }) {
   return (
     <div
       className={`
-        relative
-        p-5 rounded-2xl shadow border mb-6
-        ${isCorrect 
-          ? "bg-green-50 border-green-300 text-green-800 dark:bg-green-900/20 dark:border-green-600 dark:text-green-300"
-          : "bg-red-50 border-red-300 text-red-800 dark:bg-red-900/20 dark:border-red-600 dark:text-red-300"
+        relative p-5 rounded-2xl shadow border mb-6
+        ${
+          isCorrect
+            ? "bg-green-50 border-green-300 text-green-800 dark:bg-green-900/20 dark:border-green-600 dark:text-green-300"
+            : "bg-red-50 border-red-300 text-red-800 dark:bg-red-900/20 dark:border-red-600 dark:text-red-300"
         }
       `}
     >
-      {/* Badge status di pojok kanan atas */}
+      {/* Status badge */}
       <div
         className={`
           absolute top-3 right-3 
-          px-3 py-1 rounded-full text-xs font-semibold 
-          shadow
-          ${isCorrect 
-            ? "bg-green-600 text-white dark:bg-green-500 dark:text-white"
-            : "bg-red-600 text-white dark:bg-red-500 dark:text-white"
+          px-3 py-1 rounded-full text-xs font-semibold shadow
+          ${
+            isCorrect
+              ? "bg-green-600 text-white dark:bg-green-500"
+              : "bg-red-600 text-white dark:bg-red-500"
           }
         `}
       >
@@ -38,7 +38,7 @@ export default function QuestionReviewCard({ item, index, total }) {
       <div className="space-y-2">
         {item.options.map((opt, i) => {
           const isUser = i === item.userSelectedIndex;
-          const isCorrectOpt = i === item.correct_index;
+          const isCorrectOpt = i === item.correctIndex;
 
           let style = `
             p-3 rounded-lg border text-sm transition 
@@ -49,7 +49,9 @@ export default function QuestionReviewCard({ item, index, total }) {
           if (isCorrectOpt) {
             style +=
               " bg-green-200 border-green-600 text-green-900 dark:bg-green-700 dark:text-white";
-          } else if (isUser && !isCorrect) {
+          }
+
+          if (isUser && !isCorrect) {
             style +=
               " bg-red-200 border-red-600 text-red-900 dark:bg-red-700 dark:text-white";
           }
@@ -57,13 +59,14 @@ export default function QuestionReviewCard({ item, index, total }) {
           return (
             <div key={i} className={style}>
               {opt}
-              {isUser && !isCorrect && " (Jawaban Anda)"}
+              {isUser && " (Jawaban Anda)"}
               {isCorrectOpt && " (Benar)"}
             </div>
           );
         })}
       </div>
 
+      {/* Penjelasan LLM */}
       <div className="
         mt-4 p-3 bg-white dark:bg-gray-800 
         border border-gray-300 dark:border-gray-700 
@@ -72,7 +75,8 @@ export default function QuestionReviewCard({ item, index, total }) {
         <div className="font-semibold mb-1 text-gray-800 dark:text-gray-300">
           Penjelasan:
         </div>
-        {item.hint || "Tidak ada penjelasan tambahan."}
+
+        {item.explanation || "Tidak ada penjelasan."}
       </div>
     </div>
   );

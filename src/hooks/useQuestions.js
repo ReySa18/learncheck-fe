@@ -1,6 +1,7 @@
 // src/hooks/useQuestions.js
 import { useEffect, useState } from "react";
 import { fetchGeneratedQuestions } from "../api/generate";
+import { submitUserAnswers } from "../api/submit"; // pastikan ini menunjuk ke submit API baru
 
 export default function useQuestions({ tutorialId, userId }) {
   const [questions, setQuestions] = useState([]);
@@ -88,41 +89,49 @@ export default function useQuestions({ tutorialId, userId }) {
     return idx >= 0 ? idx : null;
   }
 
-  function submitAnswers() {
-    const details = questions.map((q) => {
-      const selIdx = resolveSelectedIndex(q, userAnswers[q.id]);
-      const isCorrect =
-        typeof q.correct_index === "number" && selIdx === q.correct_index;
+  async function submitAnswers() {
+    // bentuk payload untuk backend
+    const payload = questions.map((q) => ({
+      id: q.id,
+      question_text: q.text,
+      options: q.options,
+      correct_answer: q.options[q.correct_index],
+      user_answer:
+        resolveSelectedIndex(q, userAnswers[q.id]) != null
+          ? q.options[resolveSelectedIndex(q, userAnswers[q.id])]
+          : null
+    }));
+
+    // panggil backend
+    const res = await submitUserAnswers({
+      tutorialId,
+      userId,
+      questions: payload
+    });
+
+    // merge data backend + FE untuk membuat bentuk final
+    const merged = res.data.details.map((fb) => {
+      const q = questions.find((x) => x.id === fb.id);
+      const userIdx = resolveSelectedIndex(q, userAnswers[fb.id]);
 
       return {
-        id: q.id,
+        id: fb.id,
         question: q.text,
         options: q.options,
-        correct_index: q.correct_index,
-        correctAnswer:
-          typeof q.correct_index === "number"
-            ? q.options[q.correct_index]
-            : null,
-        userSelectedIndex: selIdx,
-        userAnswer:
-          selIdx != null && typeof q.options[selIdx] !== "undefined"
-            ? q.options[selIdx]
-            : null,
-        isCorrect,
-        hint: q.hint ?? null,
+        userSelectedIndex: userIdx,
+        correctIndex: q.correct_index,   // ← konsisten!
+        isCorrect: fb.is_correct,
+        explanation: fb.explanation,
       };
     });
 
-    const correctCount = details.filter((d) => d.isCorrect).length;
-    const total = details.length;
-
     setFeedback({
-      total,
-      correct: correctCount,
-      details,
+      total: res.data.total,
+      correct: res.data.correct,
+      details: merged,
     });
 
-    return { total, correct: correctCount, details };
+    return merged;
   }
 
   return {
@@ -133,7 +142,7 @@ export default function useQuestions({ tutorialId, userId }) {
     loading,
     feedback,
     setAnswer,
-    clearAnswer,  
+    clearAnswer,
     nextQuestion,
     prevQuestion,
     submitAnswers,
