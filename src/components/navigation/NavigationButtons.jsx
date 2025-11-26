@@ -5,17 +5,8 @@ export default function NavigationButtons({
   prevQuestion,
   nextQuestion,
   submitAnswers,
-  question,
   userAnswers,
-  flaggedQuestions,
-  markQuestion,
 }) {
-  const canProceed =
-    userAnswers?.[question.id] || flaggedQuestions?.[question.id];
-
-  const answeredCount = Object.keys(userAnswers).length;
-  const allAnswered = answeredCount === total;
-
   return (
     <div className="flex items-center justify-between mt-6">
 
@@ -27,45 +18,24 @@ export default function NavigationButtons({
         >
           Sebelumnya
         </button>
-      ) : (
-        <div></div>
-      )}
+      ) : <div></div>}
 
       <div className="flex items-center gap-3">
-
-        {/* Tombol Tandai */}
-        {!isLast && (
-          <button
-            onClick={() => markQuestion(question.id)}
-            className="
-              px-4 py-2 rounded-lg
-              bg-yellow-500 hover:bg-yellow-600
-              text-white transition
-            "
-          >
-            Tandai
-          </button>
-        )}
 
         {/* Tombol Selanjutnya */}
         {!isLast ? (
           <button
             onClick={nextQuestion}
-            disabled={!canProceed}
-            className={`px-4 py-2 rounded-lg text-white transition ${
-              canProceed
-                ? "bg-blue-600 hover:bg-blue-700"
-                : "bg-gray-400 cursor-not-allowed"
-            }`}
+            className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition"
           >
             Selanjutnya
           </button>
         ) : (
           <button
             onClick={submitAnswers}
-            disabled={!allAnswered}
+            disabled={(Object.keys(userAnswers).length !== total)}
             className={`px-4 py-2 rounded-lg text-white transition ${
-              allAnswered
+              Object.keys(userAnswers).length === total
                 ? "bg-green-600 hover:bg-green-700"
                 : "bg-gray-400 cursor-not-allowed"
             }`}

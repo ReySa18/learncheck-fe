@@ -30,16 +30,8 @@ export default function LearncheckPage({ tutorialId, userId }) {
 
   const [showHint, setShowHint] = useState(false);
 
-  const [flaggedQuestions, setFlaggedQuestions] = useState({});
 
   const [reviewIndex, setReviewIndex] = useState(0);
-
-  const markQuestion = (id) => {
-    setFlaggedQuestions((prev) => ({
-      ...prev,
-      [id]: true,
-    }));
-  };
 
   const question = questions?.[currentIndex];
 
@@ -142,8 +134,6 @@ export default function LearncheckPage({ tutorialId, userId }) {
         submitAnswers={submitAnswers}
         question={question}
         userAnswers={userAnswers}
-        flaggedQuestions={flaggedQuestions}
-        markQuestion={markQuestion}
       />
     </MainCardContainer>
   );
