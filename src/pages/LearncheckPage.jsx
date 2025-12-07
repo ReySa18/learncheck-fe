@@ -10,39 +10,36 @@ import QuestionReviewCard from '../components/feedback/QuestionReviewCard';
 import ReviewNavigationButtons from '../components/feedback/ReviewNavigationButtons';
 import FeedbackLoading from '../components/common/FeedbackLoading';
 import AppAlert from '../components/common/AppAlert';
+import ResultSummaryCard from '../components/feedback/ResultSummaryCard';
 
 export default function LearncheckPage({ tutorialId, userId }) {
-  // useQuestions menangani:
-  // - pengambilan soal
-  // - penyimpanan jawaban
-  // - navigasi soal
-  // - proses submit & generate feedback
   const { questions, preferences, userAnswers, currentIndex, isGenerating, isSubmitting, feedback, setAnswer, nextQuestion, prevQuestion, submitAnswers, clearAnswer, error, resetSession } = useQuestions({ tutorialId, userId });
 
   const [showHint, setShowHint] = useState(false);
-
+  const [showReview, setShowReview] = useState(false);
   const [reviewIndex, setReviewIndex] = useState(0);
 
   const question = questions?.[currentIndex];
 
-  // Saat pindah soal → hint selalu disembunyikan otomatis
   useEffect(() => {
     setShowHint(false);
   }, [currentIndex]);
 
-  // Jika data gagal dimuat → tampilkan pesan error
+  // =====================================
+  // ERROR
+  // =====================================
   if (error) {
     return (
       <MainCardContainer preferences={preferences}>
         <Header />
         <div className="mt-4">
-          <AppAlert type="error" message={`Gagal memuat data`} />
+          <AppAlert type="error" message="Gagal memuat data" />
         </div>
       </MainCardContainer>
     );
   }
 
-  // Saat sistem sedang generate soal awal → tampilkan loading
+  // GENERATE
   if (isGenerating) {
     return (
       <MainCardContainer preferences={preferences}>
@@ -51,38 +48,86 @@ export default function LearncheckPage({ tutorialId, userId }) {
     );
   }
 
-  // Jika tidak ada soal tersedia sama sekali
+  // NO QUESTIONS
   if (questions.length === 0) {
     return (
       <MainCardContainer preferences={preferences}>
         <Header />
-        <AppAlert type="info" message="Tidak ada pertanyaan tersedia untuk materi ini." className="mt-6" />
+        <AppAlert type="info" message="Tidak ada pertanyaan tersedia." className="mt-6" />
       </MainCardContainer>
     );
   }
 
-  // Saat submit jawaban sedang diproses → tampilkan layar loading koreksi
+  // SUBMITTING
   if (isSubmitting) {
     return <FeedbackLoading message="LearnCheck sedang memeriksa jawaban..." />;
   }
 
-  // Jika sudah keluar feedback → masuk mode review pembahasan
+  // =====================================
+  // FEEDBACK MODE
+  // =====================================
   if (feedback) {
-    const item = feedback.details[reviewIndex]; // ambil soal yg sedang direview
+     console.log("FEEDBACK DATA:", feedback);
+    const safeIndex = Math.min(reviewIndex, feedback.total - 1);
+    const item = feedback.details[safeIndex];
 
     return (
       <MainCardContainer preferences={preferences}>
         <Header />
 
-        <QuestionReviewCard item={item} index={reviewIndex} total={feedback.total} />
+        {/* OVERLAY SUMMARY */}
+        {!showReview && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div
+              className="
+                rounded-xl shadow-lg p-6 w-[90%] max-w-lg
+                bg-white dark:bg-gray-800
+                border border-gray-200 dark:border-gray-700
+              "
+            >
+              <ResultSummaryCard feedback={feedback} preferences={preferences} />
 
-        <ReviewNavigationButtons index={reviewIndex} total={feedback.total} onPrev={() => setReviewIndex((i) => Math.max(0, i - 1))} onNext={() => setReviewIndex((i) => Math.min(feedback.total - 1, i + 1))} onRestart={resetSession} />
+              <button
+                onClick={() => setShowReview(true)}
+                className="
+                  mt-4 w-full px-4 py-2 rounded-lg transition
+                  bg-blue-600 hover:bg-blue-700 text-white
+                "
+              >
+                Lihat Pembahasan
+              </button>
+            </div>
+          </div>
+        )}
+
+
+        {/* REVIEW AREA */}
+        <div className={!showReview ? 'blur-sm pointer-events-none' : ''}>
+          <QuestionReviewCard 
+            item={item} 
+            index={safeIndex} 
+            total={feedback.total} 
+            preferences={preferences} 
+          />
+
+          <ReviewNavigationButtons
+            index={safeIndex}
+            total={feedback.total}
+            onPrev={() => setReviewIndex((i) => Math.max(0, i - 1))}
+            onNext={() => setReviewIndex((i) => Math.min(feedback.total - 1, i + 1))}
+            onRestart={() => {
+              setShowReview(false);
+              resetSession();
+            }}
+          />
+        </div>
       </MainCardContainer>
     );
   }
 
-  // Mode pengerjaan soal aktif
-  // (Jika belum submit dan belum masuk review)
+  // =====================================
+  // DEFAULT QUESTION MODE (FIXED)
+  // =====================================
   const total = questions.length;
   const isLast = currentIndex === total - 1;
 
@@ -90,13 +135,10 @@ export default function LearncheckPage({ tutorialId, userId }) {
     <MainCardContainer preferences={preferences}>
       <Header />
 
-      {/* Progress bar soal */}
-      <ProgressIndicator current={currentIndex} total={total} />
+      <ProgressIndicator current={currentIndex + 1} total={total} />
 
-      {/* Card soal utama */}
-      <QuestionCard question={question} index={currentIndex} total={total} answer={userAnswers[question.id]} onAnswerChange={setAnswer} onClearAnswer={clearAnswer} showHint={showHint} onToggleHint={() => setShowHint((prev) => !prev)} />
+      <QuestionCard question={question} index={currentIndex} total={total} answer={userAnswers[question.id]} showHint={showHint} onAnswerChange={setAnswer} onClearAnswer={clearAnswer} onToggleHint={() => setShowHint((prev) => !prev)} />
 
-      {/* Modularized Navigation */}
       <NavigationButtons currentIndex={currentIndex} isLast={isLast} total={total} prevQuestion={prevQuestion} nextQuestion={nextQuestion} submitAnswers={submitAnswers} question={question} userAnswers={userAnswers} />
     </MainCardContainer>
   );
