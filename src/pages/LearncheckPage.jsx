@@ -67,7 +67,6 @@ export default function LearncheckPage({ tutorialId, userId }) {
   // FEEDBACK MODE
   // =====================================
   if (feedback) {
-     console.log("FEEDBACK DATA:", feedback);
     const safeIndex = Math.min(reviewIndex, feedback.total - 1);
     const item = feedback.details[safeIndex];
 
