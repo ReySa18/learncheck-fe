@@ -78,19 +78,37 @@ export default function LearncheckPage({ tutorialId, userId }) {
         {/* OVERLAY SUMMARY */}
         {!showReview && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-lg">
-              <ResultSummaryCard feedback={feedback} />
+            <div
+              className="
+                rounded-xl shadow-lg p-6 w-[90%] max-w-lg
+                bg-white dark:bg-gray-800
+                border border-gray-200 dark:border-gray-700
+              "
+            >
+              <ResultSummaryCard feedback={feedback} preferences={preferences} />
 
-              <button onClick={() => setShowReview(true)} className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              <button
+                onClick={() => setShowReview(true)}
+                className="
+                  mt-4 w-full px-4 py-2 rounded-lg transition
+                  bg-blue-600 hover:bg-blue-700 text-white
+                "
+              >
                 Lihat Pembahasan
               </button>
             </div>
           </div>
         )}
 
+
         {/* REVIEW AREA */}
         <div className={!showReview ? 'blur-sm pointer-events-none' : ''}>
-          <QuestionReviewCard item={item} index={safeIndex} total={feedback.total} />
+          <QuestionReviewCard 
+            item={item} 
+            index={safeIndex} 
+            total={feedback.total} 
+            preferences={preferences} 
+          />
 
           <ReviewNavigationButtons
             index={safeIndex}
