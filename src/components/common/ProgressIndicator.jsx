@@ -1,5 +1,5 @@
 export default function ProgressIndicator({ current, total }) {
-  const progress = ((current + 1) / total) * 100;
+  const progress = (current / total) * 100;
 
   return (
     <div className="w-full mb-5 select-none">
