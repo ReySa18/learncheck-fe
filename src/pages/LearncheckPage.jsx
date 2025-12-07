@@ -9,8 +9,8 @@ import NavigationButtons from '../components/navigation/NavigationButtons';
 import QuestionReviewCard from '../components/feedback/QuestionReviewCard';
 import ReviewNavigationButtons from '../components/feedback/ReviewNavigationButtons';
 import FeedbackLoading from '../components/common/FeedbackLoading';
-import AppAlert from '../components/common/AppAlert';
 import ResultSummaryCard from '../components/feedback/ResultSummaryCard';
+import AppErrorPage from '../components/common/AppErrorPage';
 
 export default function LearncheckPage({ tutorialId, userId }) {
   const { questions, preferences, userAnswers, currentIndex, isGenerating, isSubmitting, feedback, setAnswer, nextQuestion, prevQuestion, submitAnswers, clearAnswer, error, resetSession } = useQuestions({ tutorialId, userId });
@@ -31,11 +31,12 @@ export default function LearncheckPage({ tutorialId, userId }) {
   if (error) {
     return (
       <MainCardContainer preferences={preferences}>
-        <Header />
-        <div className="mt-4">
-          <AppAlert type="error" message="Gagal memuat data" />
-        </div>
-      </MainCardContainer>
+      <Header />
+      <AppErrorPage 
+      message="Gagal memuat data. Periksa koneksi atau coba ulang."
+      onRetry={resetSession}
+    />
+    </MainCardContainer>
     );
   }
 
@@ -53,7 +54,10 @@ export default function LearncheckPage({ tutorialId, userId }) {
     return (
       <MainCardContainer preferences={preferences}>
         <Header />
-        <AppAlert type="info" message="Tidak ada pertanyaan tersedia." className="mt-6" />
+        <AppErrorPage 
+          message="Gagal memuat data. Periksa koneksi atau coba ulang."
+          onRetry={resetSession}
+        />
       </MainCardContainer>
     );
   }
