@@ -20,7 +20,7 @@ export default function Header() {
       </h1>
 
       <p className="mt-1 text-base text-gray-600 dark:text-gray-300">
-        Formative Assessment
+        Formative Assessment Powered with AI
       </p>
     </div>
   );
