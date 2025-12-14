@@ -94,6 +94,7 @@ npm install
 ```
 
 ### 3. Buat file `.env`
+Ikuti berdasarkan contoh berikur.
 ```
 VITE_BASE_URL=http://localhost:3000
 ```
